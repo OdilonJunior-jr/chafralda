@@ -51,7 +51,8 @@
             max-width: 500px; margin: 0 auto; width: 100%;
             height: 100%;
         }
-        @keyframes fadeInHero { from { opacity: 0; filter: blur(5px); } to { opacity: 1; filter: blur(0); } }
+        /* AJUSTE: Removido blur da animação para garantir nitidez */
+        @keyframes fadeInHero { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* HEADER HERO */
         .hero-header { width: 100%; }
@@ -59,11 +60,17 @@
         .parents-intro { font-family: 'Playfair Display', serif; font-size: 0.75rem; color: var(--text-light); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 2px; }
         .event-title { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.1rem; color: var(--primary); margin-bottom: 0; }
         
+        /* AJUSTE: Sombra refinada e suavização de fonte para o nome Rodolfo */
         h1 { 
-            font-family: 'Great Vibes', cursive; font-size: 4.8rem; 
-            color: var(--text-dark); margin: 0; line-height: 1; 
-            padding: 5px 0; 
-            text-shadow: 0 0 15px rgba(255, 255, 255, 1), 2px 4px 10px rgba(0,0,0,0.1);
+            font-family: 'Great Vibes', cursive; 
+            font-size: 5rem; 
+            color: var(--text-dark); 
+            margin: 0; 
+            line-height: 1.1; 
+            padding: 10px 0; 
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8), 0px 0px 1px rgba(0,0,0,0.1);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         /* --- CONTAGEM REGRESSIVA --- */
@@ -280,7 +287,6 @@
         </div>
 
         <div class="bottom-action">
-            <div class="footer-note">Para facilitar a organização, o tamanho da fralda será sugerido automaticamente ao confirmar.</div>
             <button class="cta-button" id="main-cta" onclick="openModal()">Confirmar Presença</button>
         </div>
 
