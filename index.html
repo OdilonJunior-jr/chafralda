@@ -127,7 +127,7 @@
         }
         @keyframes pulseHero { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
         
-        .cta-button.btn-view { background: linear-gradient(135deg, var(--accent) 0%, #C3A37A 100%); box-shadow: 0 8px 20px rgba(212, 184, 149, 0.4); animation: none; }
+        .cta-button.btn-view { background: linear-gradient(135deg, var(--accent) 0%, #C3A37A 100%); animation: none; }
 
         /* --- MODAL (POP-UP) --- */
         .modal-overlay { 
@@ -215,9 +215,27 @@
         }
         .cancel-btn { background: none; color: #E74C3C; width: 100%; padding: 12px; border: none; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-top: 5px; cursor: pointer; text-decoration: underline; }
 
+        /* --- AJUSTE CARA DE SISTEMA --- */
+        .system-card {
+            background: #F8FAFC; border-radius: 18px; padding: 25px 20px;
+            margin: 15px 0; border: 1px solid #E2E8F0;
+        }
+        .system-label { font-size: 0.65rem; color: #94A3B8; text-transform: uppercase; font-weight: 700; letter-spacing: 1.2px; margin-bottom: 5px; display: block; }
+        .system-name { font-family: 'Great Vibes', cursive; font-size: 3.2rem; color: var(--text-dark); display: block; line-height: 1; margin-bottom: 15px; }
+
+        /* Área de Confirmação de Cancelamento Interna */
+        #cancel-confirm-area {
+            display: none;
+            background: #FFF1F2;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #FECDD3;
+            margin-top: 15px;
+        }
+
         /* Tela de Resultado Compacta */
         .result-screen { display: none; }
-        .result-box { border: 2px dashed var(--accent); padding: 15px; border-radius: 12px; margin: 15px 0; background: #FFFCF9; }
+        .result-box { border: 1px solid #E2E8F0; padding: 15px; border-radius: 12px; margin: 10px 0; background: #FFFFFF; }
         .result-size { font-family: 'Playfair Display', serif; font-size: 3.5rem; color: var(--accent); margin: 5px 0; line-height: 1; }
         #finalBrandImg { height: 35px; object-fit: contain; margin: 0 auto; display: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05)); }
     </style>
@@ -301,16 +319,30 @@
 
             <div id="result-step" class="result-screen">
                 <h3 id="result-title">Obrigado!</h3>
-                <p style="color: var(--text-light); font-size: 0.9rem;" id="result-subtitle">Sua presença foi confirmada.<br>Você ficou com:</p>
                 
-                <div class="result-box">
-                    <img id="finalBrandImg" src="" alt="Marca da Fralda">
-                    <div class="result-size" id="finalSize">--</div>
-                    <small style="color: var(--text-light); font-style: italic;">(1 Pacote)</small>
+                <div class="system-card">
+                    <span class="system-label">Presença Confirmada para</span>
+                    <span class="system-name">Rodolfo</span>
+                    
+                    <div class="result-box">
+                        <p style="font-size: 0.75rem; color: #64748B; margin-bottom: 8px; font-weight: 600;">Sua fralda sorteada:</p>
+                        <img id="finalBrandImg" src="" alt="Marca da Fralda">
+                        <div class="result-size" id="finalSize">--</div>
+                        <small style="color: #94A3B8; font-weight: 600;">(1 Pacote)</small>
+                    </div>
                 </div>
                 
-                <button class="confirm-btn" style="background: var(--text-dark); margin-top: 5px;" onclick="closeModal()">Concluir</button>
-                <button class="cancel-btn" id="cancel-btn" style="display: none;" onclick="cancelRSVP()">Cancelar minha presença</button>
+                <button class="confirm-btn" style="background: var(--text-dark); margin-top: 5px; border-radius: 12px;" onclick="closeModal()">Concluir</button>
+                
+                <button class="cancel-btn" id="cancel-trigger" onclick="showCancelConfirm()">Não poderei mais ir (cancelar)</button>
+
+                <div id="cancel-confirm-area">
+                    <p style="font-size: 0.85rem; color: #991B1B; font-weight: 600; margin-bottom: 12px;">Confirmar cancelamento?</p>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="executeCancel()" style="flex: 1; padding: 10px; border-radius: 8px; border: none; background: #E74C3C; color: white; font-weight: 700; font-size: 0.75rem; text-transform: uppercase;">Sim, Cancelar</button>
+                        <button onclick="hideCancelConfirm()" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #CBD5E1; background: white; color: #64748B; font-weight: 700; font-size: 0.75rem; text-transform: uppercase;">Voltar</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -356,7 +388,6 @@
   }, 1000);
 
   document.addEventListener("DOMContentLoaded", () => {
-      // Se já confirmou antes, muda o CTA principal
       if(localStorage.getItem(MY_RSVP_KEY)) {
           const btn = document.getElementById('main-cta');
           btn.innerText = "Ver Minha Confirmação";
@@ -365,9 +396,8 @@
       }
   });
 
-  // --- FUNÇÕES DO MODAL E ACOMPANHANTES ---
   function openModal() { document.getElementById('modal').style.display = 'flex'; }
-  function closeModal() { document.getElementById('modal').style.display = 'none'; }
+  function closeModal() { document.getElementById('modal').style.display = 'none'; hideCancelConfirm(); }
 
   function addCompanion() {
       const list = document.getElementById('companions-list');
@@ -410,21 +440,43 @@
       if(!data) return;
 
       document.getElementById('result-title').innerText = "Você já confirmou!";
-      document.getElementById('result-subtitle').innerText = "Aqui está a fralda sorteada:";
-
       const imgEl = document.getElementById('finalBrandImg');
       imgEl.src = data.brand === 'Pampers' ? 'pampers.png' : 'huggies-logo.png';
       imgEl.style.display = 'block';
 
       document.getElementById('finalSize').innerText = data.size;
-      document.getElementById('cancel-btn').style.display = 'block';
+      document.getElementById('cancel-trigger').style.display = 'block';
 
       document.getElementById('modal').style.display = 'flex';
       document.getElementById('form-step').style.display = 'none';
       document.getElementById('result-step').style.display = 'block';
   }
 
-  // --- SUBMIT COM FIREBASE ---
+  // Lógica de Cancelamento interna (Substitui Popup)
+  function showCancelConfirm() {
+      document.getElementById('cancel-confirm-area').style.display = 'block';
+      document.getElementById('cancel-trigger').style.display = 'none';
+  }
+
+  function hideCancelConfirm() {
+      document.getElementById('cancel-confirm-area').style.display = 'none';
+      document.getElementById('cancel-trigger').style.display = 'block';
+  }
+
+  async function executeCancel() {
+      try {
+          const myData = JSON.parse(localStorage.getItem(MY_RSVP_KEY) || 'null');
+          if(myData && myData.id) {
+              await db.collection("convidados").doc(myData.id).delete();
+          }
+          localStorage.removeItem(MY_RSVP_KEY);
+          location.reload();
+      } catch (err) {
+          console.error(err);
+          alert("Erro ao cancelar.");
+      }
+  }
+
   async function submitRSVP() {
       try {
           const name = document.getElementById('guestName').value.trim();
@@ -435,22 +487,19 @@
           const compString = companionsArray.join(', ');
 
           if(!name) return alert('Por favor, digite seu nome completo.');
-          if(!brand) return alert('Por favor, escolha sua marca preferida clicando na imagem.');
+          if(!brand) return alert('Por favor, escolha sua marca preferida.');
 
-          // 1) Conta RN e P no Firestore (meta 10/10)
           const rnSnap = await db.collection("convidados").where("size", "==", "RN").get();
           const pSnap  = await db.collection("convidados").where("size", "==", "P").get();
           const rnCount = rnSnap.size;
           const pCount = pSnap.size;
 
-          // 2) Sorteia tamanho
           let size = (Math.random() > 0.5) ? 'M' : 'G';
           if (rnCount < 10) size = 'RN';
           else if (pCount < 10) size = 'P';
 
           const dateISO = new Date().toISOString();
 
-          // 3) Salva no Firestore
           const docRef = await db.collection("convidados").add({
               name: name,
               companion: compString,
@@ -460,16 +509,14 @@
               viewed: false
           });
 
-          // 4) Salva localmente (para a pessoa ver/cancelar depois)
           localStorage.setItem(MY_RSVP_KEY, JSON.stringify({ id: docRef.id, brand: brand, size: size }));
 
-          // 5) Atualiza a tela
           const imgEl = document.getElementById('finalBrandImg');
           imgEl.src = brand === 'Pampers' ? 'pampers.png' : 'huggies-logo.png';
           imgEl.style.display = 'block';
 
           document.getElementById('finalSize').innerText = size;
-          document.getElementById('cancel-btn').style.display = 'block';
+          document.getElementById('cancel-trigger').style.display = 'block';
 
           document.getElementById('form-step').style.display = 'none';
           document.getElementById('result-step').style.display = 'block';
@@ -483,25 +530,7 @@
 
       } catch (err) {
           console.error(err);
-          alert("Erro ao confirmar. Verifique sua internet e tente novamente.");
-      }
-  }
-
-  // --- CANCELAR COM FIREBASE ---
-  async function cancelRSVP() {
-      if(!confirm("Tem certeza que deseja cancelar sua presença? A fralda sorteada voltará para a lista geral.")) return;
-
-      try {
-          const myData = JSON.parse(localStorage.getItem(MY_RSVP_KEY) || 'null');
-          if(myData && myData.id) {
-              await db.collection("convidados").doc(myData.id).delete();
-          }
-          localStorage.removeItem(MY_RSVP_KEY);
-          alert("Sua presença foi cancelada com sucesso.");
-          location.reload();
-      } catch (err) {
-          console.error(err);
-          alert("Não foi possível cancelar agora. Tente novamente.");
+          alert("Erro ao confirmar.");
       }
   }
 </script>
