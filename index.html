@@ -10,8 +10,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
 
-    <style>
+<style>
         :root {
             --primary: #6B8E9B; 
             --primary-dark: #51717D;
@@ -248,7 +250,7 @@
                 <span>Capão da Onça</span>
             </div>
             
-            <a href="google.com/maps?q=-19.739625930786133,-48.38064193725586&z=17&hl=pt-BR" target="_blank" class="map-link">
+            <a href="https://www.google.com/maps?q=-19.739625930786133,-48.38064193725586&z=17&hl=pt-BR" target="_blank" class="map-link">
                 <img src="maps.png" alt="Google Maps"> Ver Localização
             </a>
 
@@ -313,159 +315,196 @@
         </div>
     </div>
 
-    <script>
-        const DB_KEY = 'rodolfo_convite_final';
-        const MY_RSVP_KEY = 'minha_reserva_rodolfo'; 
+    
+<script>
+  // Firebase (Firestore)
+  const firebaseConfig = {
+    apiKey: "AIzaSyDnAnSO2DNsPFT6oRYnB9zX7J2d9nOMfTg",
+    authDomain: "cha-fralda-96fa8.firebaseapp.com",
+    projectId: "cha-fralda-96fa8",
+    storageBucket: "cha-fralda-96fa8.firebasestorage.app",
+    messagingSenderId: "79075443713",
+    appId: "1:79075443713:web:e6159ffa296f9adf3aec00",
+    measurementId: "G-3NJ6FY6VM2"
+  };
 
-        function getDB() { return JSON.parse(localStorage.getItem(DB_KEY) || '[]'); }
-        function saveDB(data) { localStorage.setItem(DB_KEY, JSON.stringify(data)); }
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-        // --- SISTEMA DE CONTAGEM REGRESSIVA ---
-        const countDownDate = new Date("Mar 21, 2026 13:00:00").getTime();
-        const countdownTimer = setInterval(function() {
-            const now = new Date().getTime();
-            const distance = countDownDate - now;
+  const MY_RSVP_KEY = 'minha_reserva_rodolfo';
 
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+  // --- SISTEMA DE CONTAGEM REGRESSIVA ---
+  const countDownDate = new Date("Mar 21, 2026 13:00:00").getTime();
+  const countdownTimer = setInterval(function() {
+      const now = new Date().getTime();
+      const distance = countDownDate - now;
 
-            document.getElementById("cd-days").innerText = days.toString().padStart(2, '0');
-            document.getElementById("cd-hours").innerText = hours.toString().padStart(2, '0');
-            document.getElementById("cd-mins").innerText = minutes.toString().padStart(2, '0');
-            document.getElementById("cd-secs").innerText = seconds.toString().padStart(2, '0');
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-            if (distance < 0) {
-                clearInterval(countdownTimer);
-                document.getElementById("countdown-container").innerHTML = "<div class='time-box'><span>É Hoje!</span></div>";
-            }
-        }, 1000);
+      document.getElementById("cd-days").innerText = days.toString().padStart(2, '0');
+      document.getElementById("cd-hours").innerText = hours.toString().padStart(2, '0');
+      document.getElementById("cd-mins").innerText = minutes.toString().padStart(2, '0');
+      document.getElementById("cd-secs").innerText = seconds.toString().padStart(2, '0');
 
-        document.addEventListener("DOMContentLoaded", () => {
-            if(localStorage.getItem(MY_RSVP_KEY)) {
-                const btn = document.getElementById('main-cta');
-                btn.innerText = "Ver Minha Confirmação";
-                btn.classList.add('btn-view'); 
-                btn.onclick = showSavedResult;
-            }
-        });
+      if (distance < 0) {
+          clearInterval(countdownTimer);
+          document.getElementById("countdown-container").innerHTML = "<div class='time-box'><span>É Hoje!</span></div>";
+      }
+  }, 1000);
 
-        // --- FUNÇÕES DO MODAL E ACOMPANHANTES ---
-        function openModal() { document.getElementById('modal').style.display = 'flex'; }
-        function closeModal() { document.getElementById('modal').style.display = 'none'; }
-        
-        function addCompanion() {
-            const list = document.getElementById('companions-list');
-            const div = document.createElement('div');
-            div.className = 'comp-row';
-            // SVG de Remover inserido diretamente no botão
-            div.innerHTML = `
-                <input type="text" class="comp-input" placeholder="Nome do acompanhante">
-                <button class="btn-rem-comp" onclick="this.parentElement.remove()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            `;
-            list.appendChild(div);
-            div.querySelector('input').focus();
-        }
+  document.addEventListener("DOMContentLoaded", () => {
+      // Se já confirmou antes, muda o CTA principal
+      if(localStorage.getItem(MY_RSVP_KEY)) {
+          const btn = document.getElementById('main-cta');
+          btn.innerText = "Ver Minha Confirmação";
+          btn.classList.add('btn-view');
+          btn.onclick = showSavedResult;
+      }
+  });
 
-        function selectBrand(brand, el) {
-            document.getElementById('selectedBrand').value = brand;
-            document.querySelectorAll('.brand-btn').forEach(b => b.classList.remove('selected'));
-            el.classList.add('selected');
-        }
+  // --- FUNÇÕES DO MODAL E ACOMPANHANTES ---
+  function openModal() { document.getElementById('modal').style.display = 'flex'; }
+  function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
-        function dispararConfetes() {
-            var duration = 3000;
-            var animationEnd = Date.now() + duration;
-            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100, colors: ['#6B8E9B', '#D4B895', '#51717D', '#ffffff'] };
+  function addCompanion() {
+      const list = document.getElementById('companions-list');
+      const div = document.createElement('div');
+      div.className = 'comp-row';
+      div.innerHTML = `
+          <input type="text" class="comp-input" placeholder="Nome do acompanhante">
+          <button class="btn-rem-comp" onclick="this.parentElement.remove()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+      `;
+      list.appendChild(div);
+      div.querySelector('input').focus();
+  }
 
-            function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+  function selectBrand(brand, el) {
+      document.getElementById('selectedBrand').value = brand;
+      document.querySelectorAll('.brand-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+  }
 
-            var interval = setInterval(function() {
-                var timeLeft = animationEnd - Date.now();
-                if (timeLeft <= 0) { return clearInterval(interval); }
-                var particleCount = 50 * (timeLeft / duration);
-                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
-                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
-            }, 250);
-        }
+  function dispararConfetes() {
+      var duration = 3000;
+      var animationEnd = Date.now() + duration;
+      var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100, colors: ['#6B8E9B', '#D4B895', '#51717D', '#ffffff'] };
 
-        function showSavedResult() {
-            const data = JSON.parse(localStorage.getItem(MY_RSVP_KEY));
-            document.getElementById('result-title').innerText = "Você já confirmou!";
-            document.getElementById('result-subtitle').innerText = "Aqui está a fralda sorteada:";
-            
-            const imgEl = document.getElementById('finalBrandImg');
-            imgEl.src = data.brand === 'Pampers' ? 'pampers.png' : 'huggies-logo.png';
-            imgEl.style.display = 'block';
-            
-            document.getElementById('finalSize').innerText = data.size;
-            document.getElementById('cancel-btn').style.display = 'block'; 
+      function randomInRange(min, max) { return Math.random() * (max - min) + min; }
 
-            document.getElementById('modal').style.display = 'flex';
-            document.getElementById('form-step').style.display = 'none';
-            document.getElementById('result-step').style.display = 'block';
-        }
+      var interval = setInterval(function() {
+          var timeLeft = animationEnd - Date.now();
+          if (timeLeft <= 0) { return clearInterval(interval); }
+          var particleCount = 50 * (timeLeft / duration);
+          confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+          confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+      }, 250);
+  }
 
-        function submitRSVP() {
-            const name = document.getElementById('guestName').value.trim();
-            const brand = document.getElementById('selectedBrand').value;
-            
-            const compInputs = document.querySelectorAll('.comp-input');
-            const companionsArray = Array.from(compInputs).map(inp => inp.value.trim()).filter(val => val !== '');
-            const compString = companionsArray.join(', '); 
+  function showSavedResult() {
+      const data = JSON.parse(localStorage.getItem(MY_RSVP_KEY) || 'null');
+      if(!data) return;
 
-            if(!name) return alert('Por favor, digite seu nome completo.');
-            if(!brand) return alert('Por favor, escolha sua marca preferida clicando na imagem.');
+      document.getElementById('result-title').innerText = "Você já confirmou!";
+      document.getElementById('result-subtitle').innerText = "Aqui está a fralda sorteada:";
 
-            const db = getDB();
-            const rnCount = db.filter(x => x.size === 'RN').length;
-            const pCount = db.filter(x => x.size === 'P').length;
-            
-            let size = (Math.random() > 0.5) ? 'M' : 'G';
-            if (rnCount < 10) size = 'RN'; else if (pCount < 10) size = 'P';
+      const imgEl = document.getElementById('finalBrandImg');
+      imgEl.src = data.brand === 'Pampers' ? 'pampers.png' : 'huggies-logo.png';
+      imgEl.style.display = 'block';
 
-            const myId = Date.now(); 
-            const dateISO = new Date().toISOString(); 
+      document.getElementById('finalSize').innerText = data.size;
+      document.getElementById('cancel-btn').style.display = 'block';
 
-            db.push({ id: myId, name, companion: compString, brand, size, date: dateISO, viewed: false });
-            saveDB(db);
+      document.getElementById('modal').style.display = 'flex';
+      document.getElementById('form-step').style.display = 'none';
+      document.getElementById('result-step').style.display = 'block';
+  }
 
-            localStorage.setItem(MY_RSVP_KEY, JSON.stringify({ id: myId, brand: brand, size: size }));
+  // --- SUBMIT COM FIREBASE ---
+  async function submitRSVP() {
+      try {
+          const name = document.getElementById('guestName').value.trim();
+          const brand = document.getElementById('selectedBrand').value;
 
-            const imgEl = document.getElementById('finalBrandImg');
-            imgEl.src = brand === 'Pampers' ? 'pampers.png' : 'huggies-logo.png';
-            imgEl.style.display = 'block';
-            
-            document.getElementById('finalSize').innerText = size;
-            document.getElementById('cancel-btn').style.display = 'block'; 
+          const compInputs = document.querySelectorAll('.comp-input');
+          const companionsArray = Array.from(compInputs).map(inp => inp.value.trim()).filter(val => val !== '');
+          const compString = companionsArray.join(', ');
 
-            document.getElementById('form-step').style.display = 'none';
-            document.getElementById('result-step').style.display = 'block';
+          if(!name) return alert('Por favor, digite seu nome completo.');
+          if(!brand) return alert('Por favor, escolha sua marca preferida clicando na imagem.');
 
-            dispararConfetes();
+          // 1) Conta RN e P no Firestore (meta 10/10)
+          const rnSnap = await db.collection("convidados").where("size", "==", "RN").get();
+          const pSnap  = await db.collection("convidados").where("size", "==", "P").get();
+          const rnCount = rnSnap.size;
+          const pCount = pSnap.size;
 
-            const btn = document.getElementById('main-cta');
-            btn.innerText = "Ver Minha Confirmação";
-            btn.classList.add('btn-view');
-            btn.onclick = showSavedResult;
-        }
+          // 2) Sorteia tamanho
+          let size = (Math.random() > 0.5) ? 'M' : 'G';
+          if (rnCount < 10) size = 'RN';
+          else if (pCount < 10) size = 'P';
 
-        function cancelRSVP() {
-            if(confirm("Tem certeza que deseja cancelar sua presença? A fralda sorteada voltará para a lista geral.")) {
-                const myData = JSON.parse(localStorage.getItem(MY_RSVP_KEY));
-                if(myData && myData.id) {
-                    let db = getDB();
-                    db = db.filter(x => x.id !== myData.id); 
-                    saveDB(db);
-                }
-                localStorage.removeItem(MY_RSVP_KEY); 
-                alert("Sua presença foi cancelada com sucesso.");
-                location.reload(); 
-            }
-        }
-    </script>
+          const dateISO = new Date().toISOString();
+
+          // 3) Salva no Firestore
+          const docRef = await db.collection("convidados").add({
+              name: name,
+              companion: compString,
+              brand: brand,
+              size: size,
+              date: dateISO,
+              viewed: false
+          });
+
+          // 4) Salva localmente (para a pessoa ver/cancelar depois)
+          localStorage.setItem(MY_RSVP_KEY, JSON.stringify({ id: docRef.id, brand: brand, size: size }));
+
+          // 5) Atualiza a tela
+          const imgEl = document.getElementById('finalBrandImg');
+          imgEl.src = brand === 'Pampers' ? 'pampers.png' : 'huggies-logo.png';
+          imgEl.style.display = 'block';
+
+          document.getElementById('finalSize').innerText = size;
+          document.getElementById('cancel-btn').style.display = 'block';
+
+          document.getElementById('form-step').style.display = 'none';
+          document.getElementById('result-step').style.display = 'block';
+
+          dispararConfetes();
+
+          const btn = document.getElementById('main-cta');
+          btn.innerText = "Ver Minha Confirmação";
+          btn.classList.add('btn-view');
+          btn.onclick = showSavedResult;
+
+      } catch (err) {
+          console.error(err);
+          alert("Erro ao confirmar. Verifique sua internet e tente novamente.");
+      }
+  }
+
+  // --- CANCELAR COM FIREBASE ---
+  async function cancelRSVP() {
+      if(!confirm("Tem certeza que deseja cancelar sua presença? A fralda sorteada voltará para a lista geral.")) return;
+
+      try {
+          const myData = JSON.parse(localStorage.getItem(MY_RSVP_KEY) || 'null');
+          if(myData && myData.id) {
+              await db.collection("convidados").doc(myData.id).delete();
+          }
+          localStorage.removeItem(MY_RSVP_KEY);
+          alert("Sua presença foi cancelada com sucesso.");
+          location.reload();
+      } catch (err) {
+          console.error(err);
+          alert("Não foi possível cancelar agora. Tente novamente.");
+      }
+  }
+</script>
+
 </body>
 </html>

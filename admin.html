@@ -8,6 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
     
     <style>
         :root {
@@ -380,106 +383,145 @@
         </div>
     </div>
 
-    <script>
-        const DB_KEY = 'rodolfo_convite_final';
+    
+<script>
+  // Firebase (Firestore)
+  const firebaseConfig = {
+    apiKey: "AIzaSyDnAnSO2DNsPFT6oRYnB9zX7J2d9nOMfTg",
+    authDomain: "cha-fralda-96fa8.firebaseapp.com",
+    projectId: "cha-fralda-96fa8",
+    storageBucket: "cha-fralda-96fa8.firebasestorage.app",
+    messagingSenderId: "79075443713",
+    appId: "1:79075443713:web:e6159ffa296f9adf3aec00",
+    measurementId: "G-3NJ6FY6VM2"
+  };
 
-        function getDB() {
-            return JSON.parse(localStorage.getItem(DB_KEY) || '[]');
-        }
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-        function saveDB(data) {
-            localStorage.setItem(DB_KEY, JSON.stringify(data));
-        }
+  function formatDate(isoString) {
+      if(!isoString) return '-';
+      // isoString pode vir como Date/ISO; garantindo string
+      const date = new Date(isoString);
+      if(isNaN(date.getTime())) return '-';
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const hours = date.getHours().toString().padStart(2, '0');
+      const mins = date.getMinutes().toString().padStart(2, '0');
+      return `${day}/${month} às ${hours}:${mins}`;
+  }
 
-        function formatDate(isoString) {
-            if(!isoString) return '-';
-            const date = new Date(isoString);
-            const day = date.getDate().toString().padStart(2, '0');
-            const month = (date.getMonth() + 1).toString().padStart(2, '0');
-            const hours = date.getHours().toString().padStart(2, '0');
-            const mins = date.getMinutes().toString().padStart(2, '0');
-            return `${day}/${month} às ${hours}:${mins}`;
-        }
+  function countCompanions(companionStr) {
+      if(!companionStr) return 0;
+      const arr = companionStr.split(',').map(s => s.trim()).filter(Boolean);
+      return arr.length;
+  }
 
-        function renderPanel() {
-            const db = getDB();
-            
-            const rn = db.filter(x => x.size === 'RN').length;
-            const p = db.filter(x => x.size === 'P').length;
-            const m = db.filter(x => x.size === 'M').length;
-            const g = db.filter(x => x.size === 'G').length;
-            const unread = db.filter(x => x.viewed !== true).length;
-            
-            let totalGuests = 0;
-            db.forEach(x => { totalGuests += 1 + (x.companion ? 1 : 0); });
+  async function renderPanel() {
+      try {
+          const snapshot = await db.collection("convidados").get();
+          const docs = [];
+          snapshot.forEach(d => docs.push({ id: d.id, ...d.data() }));
 
-            document.getElementById('total-guests').innerText = totalGuests;
-            document.getElementById('count-rn').innerText = rn;
-            document.getElementById('count-p').innerText = p;
-            document.getElementById('count-m').innerText = m;
-            document.getElementById('count-g').innerText = g;
-            
-            document.getElementById('falta-rn').innerText = rn >= 10 ? 'Meta atingida' : `Faltam ${10 - rn} unidades`;
-            document.getElementById('falta-p').innerText = p >= 10 ? 'Meta atingida' : `Faltam ${10 - p} unidades`;
+          // Ordena por data (ISO) desc
+          docs.sort((a,b) => (b.date || '').localeCompare(a.date || ''));
 
-            const notifArea = document.getElementById('notification-area');
-            if (unread > 0) {
-                notifArea.style.display = 'flex';
-                document.getElementById('unread-count').innerText = unread;
-            } else {
-                notifArea.style.display = 'none';
-            }
+          const rn = docs.filter(x => x.size === 'RN').length;
+          const p = docs.filter(x => x.size === 'P').length;
+          const m = docs.filter(x => x.size === 'M').length;
+          const g = docs.filter(x => x.size === 'G').length;
+          const unread = docs.filter(x => x.viewed !== true).length;
 
-            const tbody = document.getElementById('table-body');
-            tbody.innerHTML = '';
+          let totalGuests = 0;
+          docs.forEach(x => { totalGuests += 1 + countCompanions(x.companion); });
 
-            if (db.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state">Nenhum convidado confirmou presença ainda.</div></td></tr>';
-                return;
-            }
+          document.getElementById('total-guests').innerText = totalGuests;
+          document.getElementById('count-rn').innerText = rn;
+          document.getElementById('count-p').innerText = p;
+          document.getElementById('count-m').innerText = m;
+          document.getElementById('count-g').innerText = g;
 
-            db.slice().reverse().forEach(x => {
-                const isUnread = x.viewed !== true;
-                const statusDot = isUnread ? '<div class="dot new"></div>' : '<div class="dot read"></div>';
-                const statusText = isUnread ? '<span class="text-new">Novo</span>' : '<span class="text-read">Visualizado</span>';
-                const compHtml = x.companion ? `<div class="guest-sub">Acompanhante: ${x.companion}</div>` : '';
-                const sizeClass = `tag-${x.size.toLowerCase()}`;
+          document.getElementById('falta-rn').innerText = rn >= 10 ? 'Meta atingida' : `Faltam ${10 - rn} unidades`;
+          document.getElementById('falta-p').innerText = p >= 10 ? 'Meta atingida' : `Faltam ${10 - p} unidades`;
 
-                const tr = document.createElement('tr');
-                if(isUnread) tr.style.backgroundColor = '#FFFCF9';
+          const notifArea = document.getElementById('notification-area');
+          if (unread > 0) {
+              notifArea.style.display = 'flex';
+              document.getElementById('unread-count').innerText = unread;
+          } else {
+              notifArea.style.display = 'none';
+          }
 
-                tr.innerHTML = `
-                    <td data-label="Status">
-                        <div class="status-indicator">
-                            ${statusDot} ${statusText}
-                        </div>
-                    </td>
-                    <td data-label="Convidado">
-                        <div class="guest-main">${x.name}</div>
-                        ${compHtml}
-                    </td>
-                    <td data-label="Fralda escolhida">
-                        <div class="tags-group">
-                            <span class="tag tag-brand">${x.brand}</span>
-                            <span class="tag ${sizeClass}">TAM: ${x.size}</span>
-                        </div>
-                    </td>
-                    <td data-label="Data da confirmação">
-                        <div class="date-text">${formatDate(x.date)}</div>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
+          const tbody = document.getElementById('table-body');
+          tbody.innerHTML = '';
 
-        function markAllAsRead() {
-            let db = getDB();
-            db = db.map(x => ({ ...x, viewed: true }));
-            saveDB(db);
-            renderPanel();
-        }
+          if (docs.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state">Nenhum convidado confirmou presença ainda.</div></td></tr>';
+              return;
+          }
 
-        document.addEventListener('DOMContentLoaded', renderPanel);
-    </script>
+          docs.forEach(x => {
+              const isUnread = x.viewed !== true;
+              const statusDot = isUnread ? '<div class="dot new"></div>' : '<div class="dot read"></div>';
+              const statusText = isUnread ? '<span class="text-new">Novo</span>' : '<span class="text-read">Visualizado</span>';
+              const compHtml = x.companion ? `<div class="guest-sub">Acompanhantes: ${x.companion}</div>` : '';
+              const sizeClass = `tag-${(x.size || '').toLowerCase()}`;
+
+              const tr = document.createElement('tr');
+              if(isUnread) tr.style.backgroundColor = '#FFFCF9';
+
+              tr.innerHTML = `
+                  <td data-label="Status">
+                      <div class="status-indicator">
+                          ${statusDot} ${statusText}
+                      </div>
+                  </td>
+                  <td data-label="Convidado">
+                      <div class="guest-main">${x.name || '-'}</div>
+                      ${compHtml}
+                  </td>
+                  <td data-label="Fralda escolhida">
+                      <div class="tags-group">
+                          <span class="tag tag-brand">${x.brand || '-'}</span>
+                          <span class="tag ${sizeClass}">TAM: ${x.size || '-'}</span>
+                      </div>
+                  </td>
+                  <td data-label="Data da confirmação">
+                      <div class="date-text">${formatDate(x.date)}</div>
+                  </td>
+              `;
+              tbody.appendChild(tr);
+          });
+      } catch (err) {
+          console.error(err);
+          const tbody = document.getElementById('table-body');
+          tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state">Erro ao carregar dados do Firestore. Verifique sua internet.</div></td></tr>';
+      }
+  }
+
+  async function markAllAsRead() {
+      try {
+          const snapshot = await db.collection("convidados").where("viewed", "!=", true).get();
+          if(snapshot.empty) return renderPanel();
+
+          const batch = db.batch();
+          snapshot.forEach(doc => {
+              batch.update(doc.ref, { viewed: true });
+          });
+          await batch.commit();
+          renderPanel();
+      } catch (err) {
+          console.error(err);
+          alert("Não foi possível marcar como visto. Tente novamente.");
+      }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+      renderPanel();
+      // Atualiza automaticamente a cada 10s
+      setInterval(renderPanel, 10000);
+  });
+</script>
+
 </body>
 </html>
