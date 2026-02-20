@@ -28,8 +28,9 @@
         
         body {
             background-color: #FAFAFA;
+            /* Fundo mais visível conforme pedido anterior */
             background-image: 
-                linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.6)),
+                linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.2)),
                 url('fundo.jpg');
             background-size: cover;
             background-position: center 30%;
@@ -51,29 +52,29 @@
             max-width: 500px; margin: 0 auto; width: 100%;
             height: 100%;
         }
-        /* AJUSTE: Removido blur da animação para garantir nitidez */
         @keyframes fadeInHero { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* HEADER HERO */
         .hero-header { width: 100%; }
         .parents-intro, .event-title { text-shadow: 0 0 10px rgba(255, 255, 255, 0.9), 0 0 20px rgba(255, 255, 255, 0.8); }
         .parents-intro { font-family: 'Playfair Display', serif; font-size: 0.75rem; color: var(--text-light); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 2px; }
         .event-title { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.1rem; color: var(--primary); margin-bottom: 0; }
         
-        /* AJUSTE: Sombra refinada e suavização de fonte para o nome Rodolfo */
+        /* AJUSTE PRINCIPAL AQUI */
         h1 { 
-            font-family: 'Great Vibes', cursive; 
-            font-size: 5rem; 
-            color: var(--text-dark); 
-            margin: 0; 
-            line-height: 1.1; 
-            padding: 10px 0; 
-            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8), 0px 0px 1px rgba(0,0,0,0.1);
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px 0;
+            margin: 0;
+        }
+        h1 img {
+            max-width: 300px; /* Aumentei um pouco pois sem o fundo branco ela parece menor */
+            width: 100%;
+            height: auto;
+            /* Removemos a sombra e adicionamos o blend mode para "recortar" o fundo branco da imagem JPG */
+            mix-blend-mode: multiply;
         }
 
-        /* --- CONTAGEM REGRESSIVA --- */
         #countdown-container {
             display: flex; justify-content: center; gap: 10px; margin: 10px 0;
         }
@@ -86,7 +87,6 @@
         .time-box span { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 600; color: var(--primary-dark); line-height: 1; }
         .time-box small { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); margin-top: 3px; font-weight: 600; }
 
-        /* PAINEL DE INFORMAÇÕES */
         .glass-panel {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
@@ -113,7 +113,6 @@
         .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(212, 184, 149, 0.5), transparent); margin: 12px 0; }
         .cooler-notice { font-size: 0.85rem; color: var(--text-dark); font-family: 'Playfair Display', serif; font-style: italic; font-weight: 500;}
 
-        /* ÁREA INFERIOR */
         .bottom-action {
             width: 100%; max-width: 380px;
             display: flex; flex-direction: column; align-items: center; 
@@ -136,7 +135,6 @@
         
         .cta-button.btn-view { background: linear-gradient(135deg, var(--accent) 0%, #C3A37A 100%); animation: none; }
 
-        /* --- MODAL (POP-UP) --- */
         .modal-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(44, 62, 80, 0.7); backdrop-filter: blur(5px); z-index: 20; 
@@ -152,7 +150,6 @@
         }
         @keyframes popModal { from { opacity: 0; transform: scale(0.9) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         
-        /* Ícone Fechar Modal */
         .close-btn { 
             position: absolute; top: 15px; right: 15px; background: none; border: none; 
             color: #BDC3C7; cursor: pointer; display: flex; align-items: center; justify-content: center;
@@ -163,16 +160,13 @@
 
         h3 { font-family: 'Playfair Display', serif; color: var(--primary-dark); font-size: 1.5rem; font-weight: 700; margin-bottom: 20px; margin-top: 0; }
         
-        /* Inputs Base */
         input[type="text"] { 
             width: 100%; padding: 14px 15px; margin-bottom: 15px; 
             border: 1px solid var(--border-color); border-radius: 8px; 
             font-family: 'Montserrat', sans-serif; font-size: 0.9rem; color: var(--text-dark);
             background: var(--bg-input); 
         }
-        input[type="text"]::placeholder { color: #A0AEC0; font-weight: 400; }
         
-        /* Seção Acompanhantes */
         .companions-section { 
             text-align: left; margin: 5px 0 18px 0; background: var(--bg-input); 
             padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); 
@@ -180,7 +174,6 @@
         .comp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .comp-label { font-size: 0.75rem; color: var(--primary-dark); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
         
-        /* Botões com SVG */
         .btn-add-comp { 
             background: var(--primary); color: white; border: none; 
             width: 28px; height: 28px; border-radius: 50%; 
@@ -200,7 +193,6 @@
         }
         .btn-rem-comp svg { width: 16px; height: 16px; }
 
-        /* Marcas */
         .brand-label { font-size: 0.75rem; color: var(--primary-dark); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; text-align: left; margin-bottom: 10px; display: block; }
         .brand-options { display: flex; gap: 10px; margin-bottom: 25px; }
         .brand-btn { 
@@ -214,7 +206,6 @@
             box-shadow: 0 4px 10px rgba(107,142,155,0.15); transform: translateY(-2px); 
         }
 
-        /* Botões Finais */
         .confirm-btn { 
             background: var(--primary); color: white; width: 100%; padding: 16px; 
             border: none; border-radius: 8px; font-family: 'Montserrat', sans-serif; 
@@ -222,15 +213,25 @@
         }
         .cancel-btn { background: none; color: #E74C3C; width: 100%; padding: 12px; border: none; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-top: 5px; cursor: pointer; text-decoration: underline; }
 
-        /* --- AJUSTE CARA DE SISTEMA --- */
         .system-card {
             background: #F8FAFC; border-radius: 18px; padding: 25px 20px;
             margin: 15px 0; border: 1px solid #E2E8F0;
         }
-        .system-label { font-size: 0.65rem; color: #94A3B8; text-transform: uppercase; font-weight: 700; letter-spacing: 1.2px; margin-bottom: 5px; display: block; }
-        .system-name { font-family: 'Great Vibes', cursive; font-size: 3.2rem; color: var(--text-dark); display: block; line-height: 1; margin-bottom: 15px; }
+        .system-label { font-size: 0.65rem; color: #94A3B8; text-transform: uppercase; font-weight: 700; letter-spacing: 1.2px; margin-bottom: 15px; display: block; }
+        
+        /* AJUSTE NO MODAL TAMBÉM */
+        .system-name { 
+            display: flex; 
+            justify-content: center; 
+            margin-bottom: 20px; 
+        }
+        .system-name img {
+            max-width: 180px;
+            height: auto;
+            /* Aplica o mesmo efeito para remover o fundo branco no modal */
+            mix-blend-mode: multiply;
+        }
 
-        /* Área de Confirmação de Cancelamento Interna */
         #cancel-confirm-area {
             display: none;
             background: #FFF1F2;
@@ -240,7 +241,6 @@
             margin-top: 15px;
         }
 
-        /* Tela de Resultado Compacta */
         .result-screen { display: none; }
         .result-box { border: 1px solid #E2E8F0; padding: 15px; border-radius: 12px; margin: 10px 0; background: #FFFFFF; }
         .result-size { font-family: 'Playfair Display', serif; font-size: 3.5rem; color: var(--accent); margin: 5px 0; line-height: 1; }
@@ -254,7 +254,8 @@
         <div class="hero-header">
             <div class="parents-intro">ODILON & LETÍCIA</div>
             <div class="event-title">esperam por você no Chá de Fraldas do</div>
-            <h1>Rodolfo</h1>
+            
+            <h1><img src="rodolfo.jpg" alt="Rodolfo"></h1>
             
             <div id="countdown-container">
                 <div class="time-box"><span id="cd-days">00</span><small>Dias</small></div>
@@ -328,7 +329,7 @@
                 
                 <div class="system-card">
                     <span class="system-label">Presença Confirmada para</span>
-                    <span class="system-name">Rodolfo</span>
+                    <span class="system-name"><img src="rodolfo.jpg" alt="Rodolfo"></span>
                     
                     <div class="result-box">
                         <p style="font-size: 0.75rem; color: #64748B; margin-bottom: 8px; font-weight: 600;">Sua fralda sorteada:</p>
@@ -458,7 +459,6 @@
       document.getElementById('result-step').style.display = 'block';
   }
 
-  // Lógica de Cancelamento interna (Substitui Popup)
   function showCancelConfirm() {
       document.getElementById('cancel-confirm-area').style.display = 'block';
       document.getElementById('cancel-trigger').style.display = 'none';
