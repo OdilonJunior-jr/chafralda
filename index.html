@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chá de Fraldas - Rodolfo</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #6B8E9B; 
+            --primary-dark: #51717D;
+            --accent: #D4B895; 
+            --text-dark: #2C3E50;
+            --text-light: #5A6A77;
+            --bg-input: #FFFFFF;
+            --border-color: #E2E8F0;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        
+        body {
+            background-color: #FAFAFA;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.6)),
+                url('fundo.jpg');
+            background-size: cover;
+            background-position: center 30%;
+            background-attachment: fixed;
+            font-family: 'Montserrat', sans-serif; 
+            color: var(--text-dark);
+            height: 100dvh; 
+            overflow: hidden; 
+            display: flex; flex-direction: column;
+        }
+
+        #hero-section {
+            flex: 1; 
+            display: flex; flex-direction: column; 
+            align-items: center; justify-content: space-evenly;
+            padding: 3vh 15px; 
+            text-align: center; 
+            animation: fadeInHero 1s ease-out;
+            max-width: 500px; margin: 0 auto; width: 100%;
+            height: 100%;
+        }
+        @keyframes fadeInHero { from { opacity: 0; filter: blur(5px); } to { opacity: 1; filter: blur(0); } }
+
+        /* HEADER HERO */
+        .hero-header { width: 100%; }
+        .parents-intro, .event-title { text-shadow: 0 0 10px rgba(255, 255, 255, 0.9), 0 0 20px rgba(255, 255, 255, 0.8); }
+        .parents-intro { font-family: 'Playfair Display', serif; font-size: 0.75rem; color: var(--text-light); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 2px; }
+        .event-title { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.1rem; color: var(--primary); margin-bottom: 0; }
+        
+        h1 { 
+            font-family: 'Great Vibes', cursive; font-size: 4.8rem; 
+            color: var(--text-dark); margin: 0; line-height: 1; 
+            padding: 5px 0; 
+            text-shadow: 0 0 15px rgba(255, 255, 255, 1), 2px 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* --- CONTAGEM REGRESSIVA --- */
+        #countdown-container {
+            display: flex; justify-content: center; gap: 10px; margin: 10px 0;
+        }
+        .time-box {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,0.9);
+            border-radius: 10px; padding: 8px 10px; min-width: 55px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); backdrop-filter: blur(5px);
+        }
+        .time-box span { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 600; color: var(--primary-dark); line-height: 1; }
+        .time-box small { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); margin-top: 3px; font-weight: 600; }
+
+        /* PAINEL DE INFORMAÇÕES */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.95);
+            border-radius: 16px; padding: 15px; 
+            width: 100%; max-width: 380px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        .info-row { margin-bottom: 10px; }
+        .info-row:last-child { margin-bottom: 0; }
+        .info-row strong { font-weight: 700; color: var(--primary-dark); font-size: 1rem; display: block; }
+        .info-row span { font-size: 0.85rem; color: var(--text-light); font-weight: 500;}
+
+        .map-link {
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px; 
+            text-decoration: none; font-size: 0.75rem; color: var(--primary-dark); 
+            background: white; padding: 8px 15px; border-radius: 30px; 
+            border: 1px solid rgba(107, 142, 155, 0.2); font-weight: 600;
+            margin-top: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .map-link img { width: 14px; height: 14px; object-fit: contain; }
+
+        .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(212, 184, 149, 0.5), transparent); margin: 12px 0; }
+        .cooler-notice { font-size: 0.85rem; color: var(--text-dark); font-family: 'Playfair Display', serif; font-style: italic; font-weight: 500;}
+
+        /* ÁREA INFERIOR */
+        .bottom-action {
+            width: 100%; max-width: 380px;
+            display: flex; flex-direction: column; align-items: center; 
+        }
+        
+        .footer-note { font-size: 0.7rem; color: #444; margin-bottom: 10px; text-align: center; line-height: 1.3; font-weight: 600; text-shadow: 0 0 5px white; }
+
+        .cta-button {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white; 
+            padding: 16px 35px; 
+            border-radius: 50px; border: none; 
+            font-family: 'Montserrat', sans-serif; font-size: 0.85rem; font-weight: 700; 
+            text-transform: uppercase; letter-spacing: 1.5px; cursor: pointer; 
+            box-shadow: 0 8px 20px rgba(107, 142, 155, 0.4);
+            animation: pulseHero 2.5s infinite;
+            display: inline-block;
+        }
+        @keyframes pulseHero { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+        
+        .cta-button.btn-view { background: linear-gradient(135deg, var(--accent) 0%, #C3A37A 100%); box-shadow: 0 8px 20px rgba(212, 184, 149, 0.4); animation: none; }
+
+        /* --- MODAL (POP-UP) --- */
+        .modal-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(44, 62, 80, 0.7); backdrop-filter: blur(5px); z-index: 20; 
+            display: none; align-items: center; justify-content: center; padding: 15px;
+        }
+        
+        .modal-card { 
+            background: white; width: 100%; max-width: 360px; padding: 30px 20px 25px 20px; 
+            border-radius: 20px; text-align: center; position: relative; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2); 
+            animation: popModal 0.3s ease-out;
+            max-height: 95vh; overflow-y: auto; 
+        }
+        @keyframes popModal { from { opacity: 0; transform: scale(0.9) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        
+        /* Ícone Fechar Modal */
+        .close-btn { 
+            position: absolute; top: 15px; right: 15px; background: none; border: none; 
+            color: #BDC3C7; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: color 0.2s;
+        }
+        .close-btn:hover { color: var(--text-light); }
+        .close-btn svg { width: 22px; height: 22px; }
+
+        h3 { font-family: 'Playfair Display', serif; color: var(--primary-dark); font-size: 1.5rem; font-weight: 700; margin-bottom: 20px; margin-top: 0; }
+        
+        /* Inputs Base */
+        input[type="text"] { 
+            width: 100%; padding: 14px 15px; margin-bottom: 15px; 
+            border: 1px solid var(--border-color); border-radius: 8px; 
+            font-family: 'Montserrat', sans-serif; font-size: 0.9rem; color: var(--text-dark);
+            background: var(--bg-input); 
+        }
+        input[type="text"]::placeholder { color: #A0AEC0; font-weight: 400; }
+        
+        /* Seção Acompanhantes */
+        .companions-section { 
+            text-align: left; margin: 5px 0 18px 0; background: var(--bg-input); 
+            padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); 
+        }
+        .comp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .comp-label { font-size: 0.75rem; color: var(--primary-dark); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        /* Botões com SVG */
+        .btn-add-comp { 
+            background: var(--primary); color: white; border: none; 
+            width: 28px; height: 28px; border-radius: 50%; 
+            cursor: pointer; display: flex; align-items: center; justify-content: center; 
+            box-shadow: 0 2px 5px rgba(107, 142, 155, 0.3);
+        }
+        .btn-add-comp svg { width: 14px; height: 14px; }
+        
+        .comp-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: stretch; }
+        .comp-row:last-child { margin-bottom: 0; }
+        .comp-row input { margin-bottom: 0; flex: 1; }
+        
+        .btn-rem-comp { 
+            background: #E74C3C; color: white; border: none; border-radius: 8px; 
+            width: 45px; display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; box-shadow: 0 2px 5px rgba(231, 76, 60, 0.2);
+        }
+        .btn-rem-comp svg { width: 16px; height: 16px; }
+
+        /* Marcas */
+        .brand-label { font-size: 0.75rem; color: var(--primary-dark); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; text-align: left; margin-bottom: 10px; display: block; }
+        .brand-options { display: flex; gap: 10px; margin-bottom: 25px; }
+        .brand-btn { 
+            flex: 1; border: 1px solid var(--border-color); padding: 12px 10px; 
+            border-radius: 10px; background: white; cursor: pointer; transition: all 0.2s; 
+            filter: grayscale(100%); opacity: 0.5; display: flex; justify-content: center; align-items: center; height: 55px;
+        }
+        .brand-btn img { max-height: 30px; max-width: 100%; object-fit: contain; }
+        .brand-btn.selected { 
+            border: 2px solid var(--primary); filter: grayscale(0%); opacity: 1; 
+            box-shadow: 0 4px 10px rgba(107,142,155,0.15); transform: translateY(-2px); 
+        }
+
+        /* Botões Finais */
+        .confirm-btn { 
+            background: var(--primary); color: white; width: 100%; padding: 16px; 
+            border: none; border-radius: 8px; font-family: 'Montserrat', sans-serif; 
+            font-weight: 700; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; 
+        }
+        .cancel-btn { background: none; color: #E74C3C; width: 100%; padding: 12px; border: none; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-top: 5px; cursor: pointer; text-decoration: underline; }
+
+        /* Tela de Resultado Compacta */
+        .result-screen { display: none; }
+        .result-box { border: 2px dashed var(--accent); padding: 15px; border-radius: 12px; margin: 15px 0; background: #FFFCF9; }
+        .result-size { font-family: 'Playfair Display', serif; font-size: 3.5rem; color: var(--accent); margin: 5px 0; line-height: 1; }
+        #finalBrandImg { height: 35px; object-fit: contain; margin: 0 auto; display: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05)); }
+    </style>
+</head>
+<body>
+
+    <div id="hero-section">
+        
+        <div class="hero-header">
+            <div class="parents-intro">ODILON & LETÍCIA</div>
+            <div class="event-title">esperam por você no Chá de Fraldas do</div>
+            <h1>Rodolfo</h1>
+            
+            <div id="countdown-container">
+                <div class="time-box"><span id="cd-days">00</span><small>Dias</small></div>
+                <div class="time-box"><span id="cd-hours">00</span><small>Horas</small></div>
+                <div class="time-box"><span id="cd-mins">00</span><small>Min</small></div>
+                <div class="time-box"><span id="cd-secs">00</span><small>Seg</small></div>
+            </div>
+        </div>
+
+        <div class="glass-panel">
+            <div class="info-row">
+                <strong>21 DE MARÇO, 2026</strong>
+                <span>Sábado • a partir das 13:00</span>
+            </div>
+            
+            <div class="info-row" style="margin-top: 10px;">
+                <strong>RUFINÓPOLIS</strong>
+                <span>Capão da Onça</span>
+            </div>
+            
+            <a href="google.com/maps?q=-19.739625930786133,-48.38064193725586&z=17&hl=pt-BR" target="_blank" class="map-link">
+                <img src="maps.png" alt="Google Maps"> Ver Localização
+            </a>
+
+            <div class="divider"></div>
+
+            <div class="cooler-notice">
+                A bebida fica por sua conta.<br>Traga seu cooler com sua bebida preferida!
+            </div>
+        </div>
+
+        <div class="bottom-action">
+            <div class="footer-note">Para facilitar a organização, o tamanho da fralda será sugerido automaticamente ao confirmar.</div>
+            <button class="cta-button" id="main-cta" onclick="openModal()">Confirmar Presença</button>
+        </div>
+
+    </div>
+
+    <div class="modal-overlay" id="modal">
+        <div class="modal-card">
+            <button class="close-btn" onclick="closeModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            
+            <div id="form-step">
+                <h3>Sua Presença</h3>
+                <input type="text" id="guestName" placeholder="Seu nome completo">
+                
+                <div class="companions-section">
+                    <div class="comp-header">
+                        <span class="comp-label">Acompanhantes (Opcional)</span>
+                        <button class="btn-add-comp" onclick="addCompanion()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+                        </button>
+                    </div>
+                    <div id="companions-list">
+                        </div>
+                </div>
+
+                <span class="brand-label">Sua marca preferida:</span>
+                <div class="brand-options">
+                    <div class="brand-btn" onclick="selectBrand('Pampers', this)"><img src="pampers.png" alt="Pampers"></div>
+                    <div class="brand-btn" onclick="selectBrand('Huggies', this)"><img src="huggies-logo.png" alt="Huggies"></div>
+                </div>
+                <input type="hidden" id="selectedBrand">
+
+                <button class="confirm-btn" onclick="submitRSVP()">Confirmar</button>
+            </div>
+
+            <div id="result-step" class="result-screen">
+                <h3 id="result-title">Obrigado!</h3>
+                <p style="color: var(--text-light); font-size: 0.9rem;" id="result-subtitle">Sua presença foi confirmada.<br>Você ficou com:</p>
+                
+                <div class="result-box">
+                    <img id="finalBrandImg" src="" alt="Marca da Fralda">
+                    <div class="result-size" id="finalSize">--</div>
+                    <small style="color: var(--text-light); font-style: italic;">(1 Pacote)</small>
+                </div>
+                
+                <button class="confirm-btn" style="background: var(--text-dark); margin-top: 5px;" onclick="closeModal()">Concluir</button>
+                <button class="cancel-btn" id="cancel-btn" style="display: none;" onclick="cancelRSVP()">Cancelar minha presença</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DB_KEY = 'rodolfo_convite_final';
+        const MY_RSVP_KEY = 'minha_reserva_rodolfo'; 
+
+        function getDB() { return JSON.parse(localStorage.getItem(DB_KEY) || '[]'); }
+        function saveDB(data) { localStorage.setItem(DB_KEY, JSON.stringify(data)); }
+
+        // --- SISTEMA DE CONTAGEM REGRESSIVA ---
+        const countDownDate = new Date("Mar 21, 2026 13:00:00").getTime();
+        const countdownTimer = setInterval(function() {
+            const now = new Date().getTime();
+            const distance = countDownDate - now;
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("cd-days").innerText = days.toString().padStart(2, '0');
+            document.getElementById("cd-hours").innerText = hours.toString().padStart(2, '0');
+            document.getElementById("cd-mins").innerText = minutes.toString().padStart(2, '0');
+            document.getElementById("cd-secs").innerText = seconds.toString().padStart(2, '0');
+
+            if (distance < 0) {
+                clearInterval(countdownTimer);
+                document.getElementById("countdown-container").innerHTML = "<div class='time-box'><span>É Hoje!</span></div>";
+            }
+        }, 1000);
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if(localStorage.getItem(MY_RSVP_KEY)) {
+                const btn = document.getElementById('main-cta');
+                btn.innerText = "Ver Minha Confirmação";
+                btn.classList.add('btn-view'); 
+                btn.onclick = showSavedResult;
+            }
+        });
+
+        // --- FUNÇÕES DO MODAL E ACOMPANHANTES ---
+        function openModal() { document.getElementById('modal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+        
+        function addCompanion() {
+            const list = document.getElementById('companions-list');
+            const div = document.createElement('div');
+            div.className = 'comp-row';
+            // SVG de Remover inserido diretamente no botão
+            div.innerHTML = `
+                <input type="text" class="comp-input" placeholder="Nome do acompanhante">
+                <button class="btn-rem-comp" onclick="this.parentElement.remove()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            `;
+            list.appendChild(div);
+            div.querySelector('input').focus();
+        }
+
+        function selectBrand(brand, el) {
+            document.getElementById('selectedBrand').value = brand;
+            document.querySelectorAll('.brand-btn').forEach(b => b.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
+        function dispararConfetes() {
+            var duration = 3000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100, colors: ['#6B8E9B', '#D4B895', '#51717D', '#ffffff'] };
+
+            function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) { return clearInterval(interval); }
+                var particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+
+        function showSavedResult() {
+            const data = JSON.parse(localStorage.getItem(MY_RSVP_KEY));
+            document.getElementById('result-title').innerText = "Você já confirmou!";
+            document.getElementById('result-subtitle').innerText = "Aqui está a fralda sorteada:";
+            
+            const imgEl = document.getElementById('finalBrandImg');
+            imgEl.src = data.brand === 'Pampers' ? 'pampers.png' : 'huggies-logo.png';
+            imgEl.style.display = 'block';
+            
+            document.getElementById('finalSize').innerText = data.size;
+            document.getElementById('cancel-btn').style.display = 'block'; 
+
+            document.getElementById('modal').style.display = 'flex';
+            document.getElementById('form-step').style.display = 'none';
+            document.getElementById('result-step').style.display = 'block';
+        }
+
+        function submitRSVP() {
+            const name = document.getElementById('guestName').value.trim();
+            const brand = document.getElementById('selectedBrand').value;
+            
+            const compInputs = document.querySelectorAll('.comp-input');
+            const companionsArray = Array.from(compInputs).map(inp => inp.value.trim()).filter(val => val !== '');
+            const compString = companionsArray.join(', '); 
+
+            if(!name) return alert('Por favor, digite seu nome completo.');
+            if(!brand) return alert('Por favor, escolha sua marca preferida clicando na imagem.');
+
+            const db = getDB();
+            const rnCount = db.filter(x => x.size === 'RN').length;
+            const pCount = db.filter(x => x.size === 'P').length;
+            
+            let size = (Math.random() > 0.5) ? 'M' : 'G';
+            if (rnCount < 10) size = 'RN'; else if (pCount < 10) size = 'P';
+
+            const myId = Date.now(); 
+            const dateISO = new Date().toISOString(); 
+
+            db.push({ id: myId, name, companion: compString, brand, size, date: dateISO, viewed: false });
+            saveDB(db);
+
+            localStorage.setItem(MY_RSVP_KEY, JSON.stringify({ id: myId, brand: brand, size: size }));
+
+            const imgEl = document.getElementById('finalBrandImg');
+            imgEl.src = brand === 'Pampers' ? 'pampers.png' : 'huggies-logo.png';
+            imgEl.style.display = 'block';
+            
+            document.getElementById('finalSize').innerText = size;
+            document.getElementById('cancel-btn').style.display = 'block'; 
+
+            document.getElementById('form-step').style.display = 'none';
+            document.getElementById('result-step').style.display = 'block';
+
+            dispararConfetes();
+
+            const btn = document.getElementById('main-cta');
+            btn.innerText = "Ver Minha Confirmação";
+            btn.classList.add('btn-view');
+            btn.onclick = showSavedResult;
+        }
+
+        function cancelRSVP() {
+            if(confirm("Tem certeza que deseja cancelar sua presença? A fralda sorteada voltará para a lista geral.")) {
+                const myData = JSON.parse(localStorage.getItem(MY_RSVP_KEY));
+                if(myData && myData.id) {
+                    let db = getDB();
+                    db = db.filter(x => x.id !== myData.id); 
+                    saveDB(db);
+                }
+                localStorage.removeItem(MY_RSVP_KEY); 
+                alert("Sua presença foi cancelada com sucesso.");
+                location.reload(); 
+            }
+        }
+    </script>
+</body>
+</html>

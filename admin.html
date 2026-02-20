@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo | Chá de Fraldas</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-body: #F8F9FA;
+            --surface: #FFFFFF;
+            --text-dark: #212529;
+            --text-muted: #6C757D;
+            --border: #DEE2E6;
+            --primary: #2C3E50;
+            
+            /* Cores Sóbrias */
+            --color-rn: #D4A373;
+            --color-p: #85C1E9;
+            --color-m: #73C6B6;
+            --color-g: #F4D03F;
+            --color-brand: #7F8C8D;
+            
+            /* Status */
+            --status-new: #E67E22;
+            --status-read: #27AE60;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            padding: 40px 20px;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* --- CABEÇALHO --- */
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+        }
+
+        .header h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+        }
+
+        .header span {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* --- CARDS DE RESUMO --- */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            transition: transform 0.2s ease;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        .stat-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        /* --- NOTIFICAÇÃO --- */
+        .notification-bar {
+            background-color: #FFF3E0;
+            border: 1px solid #FFE0B2;
+            color: #E65100;
+            padding: 12px 20px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .btn-action {
+            background-color: var(--status-new);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .btn-action:hover { opacity: 0.9; }
+
+        /* --- TABELA DE CONVIDADOS --- */
+        .table-wrapper {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            min-width: 600px;
+        }
+
+        th {
+            background-color: #FDFDFD;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background-color: #F8F9FA; }
+
+        .guest-main {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--primary);
+        }
+        .guest-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .date-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Status Dot */
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .dot { width: 8px; height: 8px; border-radius: 50%; }
+        .dot.new { background-color: var(--status-new); }
+        .dot.read { background-color: var(--status-read); }
+        .text-new { color: var(--status-new); }
+        .text-read { color: var(--text-muted); }
+
+        /* Tags */
+        .tags-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .tag {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            color: white;
+            white-space: nowrap;
+        }
+        .tag-rn { background-color: var(--color-rn); }
+        .tag-p { background-color: var(--color-p); color: var(--primary); }
+        .tag-m { background-color: var(--color-m); color: var(--primary); }
+        .tag-g { background-color: var(--color-g); color: var(--primary); }
+        .tag-brand { background-color: var(--color-brand); }
+
+        .empty-state {
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* =========================================
+           RESPONSIVIDADE: TABLET (Telas até 992px)
+           ========================================= */
+        @media (max-width: 992px) {
+            body { padding: 30px 15px; }
+            .stats-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .table-wrapper {
+                /* Permite rolagem horizontal suave no tablet se necessário */
+                overflow-x: auto; 
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        /* =========================================
+           RESPONSIVIDADE: CELULAR (Telas até 768px)
+           ========================================= */
+        @media (max-width: 768px) {
+            body { padding: 20px 10px; }
+            
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .stat-box:first-child {
+                grid-column: span 2;
+            }
+
+            .notification-bar {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+
+            /* Transformação da Tabela em Cards */
+            .table-wrapper {
+                border: none;
+                background: transparent;
+                box-shadow: none;
+            }
+            table { min-width: 100%; display: block; }
+            thead { display: none; }
+            tbody { display: block; width: 100%; }
+            
+            tr {
+                display: block;
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                margin-bottom: 15px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            }
+            
+            td {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+                border: none;
+                border-bottom: 1px solid #F0F2F5;
+                padding: 12px 15px;
+                position: relative;
+            }
+            td:last-child { border-bottom: none; }
+            
+            /* Rótulos dinâmicos injetados antes do conteúdo */
+            td::before {
+                content: attr(data-label);
+                font-size: 0.65rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                color: var(--text-muted);
+                letter-spacing: 0.5px;
+                margin-bottom: 2px;
+            }
+            
+            .guest-main { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>Painel Administrativo</h1>
+            <span>Gestão de Presenças e Fraldas</span>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-box">
+                <div class="stat-label">Total Confirmado</div>
+                <div class="stat-value" id="total-guests">0</div>
+                <div class="stat-meta">Pessoas (com acompanhantes)</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Fraldas RN</div>
+                <div class="stat-value"><span id="count-rn">0</span><span style="font-size: 1rem; color: #95A5A6;">/10</span></div>
+                <div class="stat-meta" id="falta-rn">Faltam 10 unidades</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Fraldas P</div>
+                <div class="stat-value"><span id="count-p">0</span><span style="font-size: 1rem; color: #95A5A6;">/10</span></div>
+                <div class="stat-meta" id="falta-p">Faltam 10 unidades</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Fraldas M</div>
+                <div class="stat-value" id="count-m">0</div>
+                <div class="stat-meta">Livre</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Fraldas G</div>
+                <div class="stat-value" id="count-g">0</div>
+                <div class="stat-meta">Livre</div>
+            </div>
+        </div>
+
+        <div id="notification-area" class="notification-bar" style="display: none;">
+            <span>Existem <strong><span id="unread-count">0</span> novas confirmações</strong> pendentes.</span>
+            <button class="btn-action" onclick="markAllAsRead()">Marcar como Visto</button>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 35%;">Convidado</th>
+                        <th style="width: 30%;">Fralda</th>
+                        <th style="width: 20%;">Data de Confirmação</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const DB_KEY = 'rodolfo_convite_final';
+
+        function getDB() {
+            return JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+        }
+
+        function saveDB(data) {
+            localStorage.setItem(DB_KEY, JSON.stringify(data));
+        }
+
+        function formatDate(isoString) {
+            if(!isoString) return '-';
+            const date = new Date(isoString);
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const hours = date.getHours().toString().padStart(2, '0');
+            const mins = date.getMinutes().toString().padStart(2, '0');
+            return `${day}/${month} às ${hours}:${mins}`;
+        }
+
+        function renderPanel() {
+            const db = getDB();
+            
+            const rn = db.filter(x => x.size === 'RN').length;
+            const p = db.filter(x => x.size === 'P').length;
+            const m = db.filter(x => x.size === 'M').length;
+            const g = db.filter(x => x.size === 'G').length;
+            const unread = db.filter(x => x.viewed !== true).length;
+            
+            let totalGuests = 0;
+            db.forEach(x => { totalGuests += 1 + (x.companion ? 1 : 0); });
+
+            document.getElementById('total-guests').innerText = totalGuests;
+            document.getElementById('count-rn').innerText = rn;
+            document.getElementById('count-p').innerText = p;
+            document.getElementById('count-m').innerText = m;
+            document.getElementById('count-g').innerText = g;
+            
+            document.getElementById('falta-rn').innerText = rn >= 10 ? 'Meta atingida' : `Faltam ${10 - rn} unidades`;
+            document.getElementById('falta-p').innerText = p >= 10 ? 'Meta atingida' : `Faltam ${10 - p} unidades`;
+
+            const notifArea = document.getElementById('notification-area');
+            if (unread > 0) {
+                notifArea.style.display = 'flex';
+                document.getElementById('unread-count').innerText = unread;
+            } else {
+                notifArea.style.display = 'none';
+            }
+
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+
+            if (db.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state">Nenhum convidado confirmou presença ainda.</div></td></tr>';
+                return;
+            }
+
+            db.slice().reverse().forEach(x => {
+                const isUnread = x.viewed !== true;
+                const statusDot = isUnread ? '<div class="dot new"></div>' : '<div class="dot read"></div>';
+                const statusText = isUnread ? '<span class="text-new">Novo</span>' : '<span class="text-read">Visualizado</span>';
+                const compHtml = x.companion ? `<div class="guest-sub">Acompanhante: ${x.companion}</div>` : '';
+                const sizeClass = `tag-${x.size.toLowerCase()}`;
+
+                const tr = document.createElement('tr');
+                if(isUnread) tr.style.backgroundColor = '#FFFCF9';
+
+                tr.innerHTML = `
+                    <td data-label="Status">
+                        <div class="status-indicator">
+                            ${statusDot} ${statusText}
+                        </div>
+                    </td>
+                    <td data-label="Convidado">
+                        <div class="guest-main">${x.name}</div>
+                        ${compHtml}
+                    </td>
+                    <td data-label="Fralda escolhida">
+                        <div class="tags-group">
+                            <span class="tag tag-brand">${x.brand}</span>
+                            <span class="tag ${sizeClass}">TAM: ${x.size}</span>
+                        </div>
+                    </td>
+                    <td data-label="Data da confirmação">
+                        <div class="date-text">${formatDate(x.date)}</div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function markAllAsRead() {
+            let db = getDB();
+            db = db.map(x => ({ ...x, viewed: true }));
+            saveDB(db);
+            renderPanel();
+        }
+
+        document.addEventListener('DOMContentLoaded', renderPanel);
+    </script>
+</body>
+</html>
