@@ -9,32 +9,67 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
     <style>
         body { font-family: 'Montserrat', sans-serif; background: #f4f7f6; padding: 20px; }
-        .container { max-width: 900px; margin: 0 auto; }
+        .container { max-width: 1000px; margin: 0 auto; }
         .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0; }
         .stat-card { background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         table { width: 100%; background: white; border-collapse: collapse; border-radius: 10px; overflow: hidden; }
         th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
         th { background: #2c3e50; color: white; font-size: 0.8rem; }
         .unread { background: #fff9f0; border-left: 4px solid #e67e22; }
+        button { cursor: pointer; }
+        
+        /* Modal de Edição */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 100; padding: 15px; }
+        .modal-content { background: white; padding: 25px; border-radius: 12px; width: 100%; max-width: 400px; }
+        .modal-content label { font-size: 0.8rem; font-weight: bold; margin-top: 10px; display: block; color: #34495e; }
+        .modal-content input, .modal-content select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .action-btn { padding: 8px 12px; border: none; border-radius: 5px; color: white; font-weight: bold; margin-right: 5px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Painel de Presenças</h1>
-        <button onclick="markAllRead()" style="padding:10px; background:#e67e22; color:white; border:none; border-radius:5px; cursor:pointer">Marcar Novos como Vistos</button>
+        <button onclick="markAllRead()" style="padding:10px 15px; background:#e67e22; color:white; border:none; border-radius:5px; font-weight:bold;">Marcar Novos como Vistos</button>
         
         <div class="stats">
             <div class="stat-card"><h3>Total Pessoas</h3><p id="t-total" style="font-size:1.5rem; font-weight:700">0</p></div>
-            <div class="stat-card"><h3>RN</h3><p id="t-rn">0/10</p></div>
             <div class="stat-card"><h3>P</h3><p id="t-p">0/10</p></div>
             <div class="stat-card"><h3>M</h3><p id="t-m">0</p></div>
             <div class="stat-card"><h3>G</h3><p id="t-g">0</p></div>
         </div>
 
         <table>
-            <thead><tr><th>Convidado</th><th>Fralda</th><th>Data</th></tr></thead>
+            <thead><tr><th>Convidado</th><th>Fralda</th><th>Data</th><th>Ações</th></tr></thead>
             <tbody id="table-body"></tbody>
         </table>
+    </div>
+
+    <div id="editModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="margin-top:0;">Editar Convidado</h3>
+            <input type="hidden" id="edit-id">
+            
+            <label>Nome do Convidado:</label>
+            <input type="text" id="edit-name">
+            
+            <label>Acompanhantes (separados por vírgula):</label>
+            <input type="text" id="edit-comp" placeholder="Ex: Maria, João">
+            
+            <label>Marca:</label>
+            <input type="text" id="edit-brand">
+            
+            <label>Tamanho:</label>
+            <select id="edit-size">
+                <option value="P">P</option>
+                <option value="M">M</option>
+                <option value="G">G</option>
+            </select>
+            
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button onclick="saveEdit()" style="flex:1; background:#2ecc71; color:white; border:none; padding:12px; border-radius:5px; font-weight:bold;">Salvar</button>
+                <button onclick="closeEdit()" style="flex:1; background:#95a5a6; color:white; border:none; padding:12px; border-radius:5px; font-weight:bold;">Cancelar</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -44,8 +79,7 @@
             projectId: "cha-fralda-96fa8",
             storageBucket: "cha-fralda-96fa8.firebasestorage.app",
             messagingSenderId: "79075443713",
-            appId: "1:79075443713:web:e6159ffa296f9adf3aec00",
-            measurementId: "G-3NJ6FY6VM2"
+            appId: "1:79075443713:web:e6159ffa296f9adf3aec00"
         };
 
         firebase.initializeApp(firebaseConfig);
@@ -53,23 +87,43 @@
 
         db.collection("convidados").orderBy("date", "desc").onSnapshot(snapshot => {
             let html = "";
-            let c = { RN: 0, P: 0, M: 0, G: 0, total: 0 };
+            let c = { P: 0, M: 0, G: 0, total: 0 };
             
             snapshot.forEach(doc => {
                 const d = doc.data();
-                c[d.size]++;
-                c.total += 1 + (d.companion ? d.companion.split(',').length : 0);
+                if(c[d.size] !== undefined) c[d.size]++;
+                
+                // Trata acompanhantes em array (novo modelo) ou string (modelo antigo)
+                let compText = "";
+                let compCount = 0;
+                if(d.companions && Array.isArray(d.companions)) {
+                    compText = d.companions.join(', ');
+                    compCount = d.companions.length;
+                } else if(d.companion) {
+                    compText = d.companion;
+                    compCount = d.companion.split(',').length;
+                }
+
+                c.total += 1 + compCount;
                 
                 html += `<tr class="${d.viewed ? '' : 'unread'}">
-                    <td><strong>${d.name}</strong><br><small>${d.companion || 'Sem acompanhantes'}</small></td>
-                    <td>${d.brand} - ${d.size}</td>
+                    <td>
+                        <strong id="name-${doc.id}">${d.name}</strong><br>
+                        <small id="comp-${doc.id}">${compText || 'Sem acompanhantes'}</small>
+                    </td>
+                    <td>
+                        <span id="brand-${doc.id}">${d.brand}</span> - <span id="size-${doc.id}">${d.size}</span>
+                    </td>
                     <td>${new Date(d.date).toLocaleString()}</td>
+                    <td>
+                        <button class="action-btn" style="background:#3498db;" onclick="openEdit('${doc.id}')">Editar</button>
+                        <button class="action-btn" style="background:#e74c3c;" onclick="deleteGuest('${doc.id}')">Excluir</button>
+                    </td>
                 </tr>`;
             });
 
             document.getElementById('table-body').innerHTML = html;
             document.getElementById('t-total').innerText = c.total;
-            document.getElementById('t-rn').innerText = `${c.RN}/10`;
             document.getElementById('t-p').innerText = `${c.P}/10`;
             document.getElementById('t-m').innerText = c.M;
             document.getElementById('t-g').innerText = c.G;
@@ -80,6 +134,47 @@
             const unread = await db.collection("convidados").where("viewed", "==", false).get();
             unread.forEach(doc => batch.update(doc.ref, { viewed: true }));
             await batch.commit();
+        }
+
+        async function deleteGuest(id) {
+            if(confirm("Tem certeza que deseja excluir esta presença?")) {
+                await db.collection("convidados").doc(id).delete();
+            }
+        }
+
+        function openEdit(id) {
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-name').value = document.getElementById(`name-${id}`).innerText;
+            
+            const comps = document.getElementById(`comp-${id}`).innerText;
+            document.getElementById('edit-comp').value = comps === 'Sem acompanhantes' ? '' : comps;
+            
+            document.getElementById('edit-brand').value = document.getElementById(`brand-${id}`).innerText;
+            document.getElementById('edit-size').value = document.getElementById(`size-${id}`).innerText;
+            
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeEdit() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        async function saveEdit() {
+            const id = document.getElementById('edit-id').value;
+            const name = document.getElementById('edit-name').value;
+            const companionsStr = document.getElementById('edit-comp').value;
+            const companions = companionsStr.split(',').map(s => s.trim()).filter(s => s);
+            const brand = document.getElementById('edit-brand').value;
+            const size = document.getElementById('edit-size').value;
+
+            await db.collection("convidados").doc(id).update({
+                name: name,
+                companions: companions,
+                brand: brand,
+                size: size
+            });
+            
+            closeEdit();
         }
     </script>
 </body>
